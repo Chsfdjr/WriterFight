@@ -1,0 +1,28 @@
+WriterFight | The battle of keyboard
+
+Ce jeu multijoueur développé en C à pour but de se faire combattre des joueurs entre eux.
+L'objectif et d'acquérir le plus de points possibles en un temps apparti.
+
+Pour héberger une session :
+
+    ./hostWriterFight -p port [-f filepath]
+
+    Vous pouvez générer votre propre fichier avec vos phrases favorites et l'utiliser grâce au -f
+    Sinon un fichier par défaut sera utilisé.
+
+    Pour lancer une partie, il vous suffira d'entrer la commande "/start"
+    Si vous voulez la stoppez, il vous suffira d'entrer la commande "/stop"
+
+Pour rejoindre une session :
+
+    ./playerWriterFight ip port
+
+    Avec l'ip et le port de la session. Une fois rejoint, entrez votre nom ou pseudonyme.
+    Si une partie est déjà en cours, vous resterez connecté à la session en attendant le début d'une nouvelle partie.
+
+Pour changer le temps d'une partie il suffit d'aller dans './include.h' et modifiez la variable GAME_TIME.
+
+Par exemple :
+
+    #define GAME_TIME 10
+    Pour une partie de 10 secondes.
