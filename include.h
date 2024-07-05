@@ -26,6 +26,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <netdb.h>
+#include <ifaddrs.h>
 #define GAME_TIME 10
 #define MAX_USER 50
 

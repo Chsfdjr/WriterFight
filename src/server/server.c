@@ -125,46 +125,36 @@ void loop_serv(writerfight_t *w, int serv_fd)
         handle_client_activity(w, &w->server.readfds);
     }
 }
-void checkHostName(int hostname)
-{
-	if (hostname == -1) {
-		perror("gethostname");
-		exit(84);
-	}
+
+char* get_ip() {
+    struct ifaddrs *ifaddr, *ifa;
+    int family;
+    static char ip[NI_MAXHOST];
+
+    if (getifaddrs(&ifaddr) == -1) {
+        perror("getifaddrs");
+        exit(EXIT_FAILURE);
+    }
+
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL) continue;
+
+        family = ifa->ifa_addr->sa_family;
+        if (family == AF_INET) {
+            if (getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+                            ip, NI_MAXHOST, NULL, 0, NI_NUMERICHOST) == 0) {
+                // Ignore loopback address
+                if (strcmp(ip, "127.0.0.1") != 0) {
+                    freeifaddrs(ifaddr);
+                    return ip;
+                }
+            }
+        }
+    }
+
+    freeifaddrs(ifaddr);
+    return NULL;
 }
-
-void checkHostEntry(struct hostent * hostentry)
-{
-	if (hostentry == NULL) {
-		perror("gethostbyname");
-		exit(84);
-	}
-}
-
-void checkIPbuffer(char *IPbuffer)
-{
-	if (NULL == IPbuffer) {
-		perror("inet_ntoa");
-		exit(1);
-	}
-}
-
-char *get_ip(void)
-{
-	char hostbuffer[256];
-	char *IPbuffer;
-	struct hostent *host_entry;
-	int hostname;
-
-	hostname = gethostname(hostbuffer, sizeof(hostbuffer));
-	checkHostName(hostname);
-	host_entry = gethostbyname(hostbuffer);
-	checkHostEntry(host_entry);
-	IPbuffer = inet_ntoa(*((struct in_addr*)
-						host_entry->h_addr_list[0]));
-	return IPbuffer;
-}
-
 
 void init_serv(writerfight_t *w)
 {
@@ -179,6 +169,10 @@ void init_serv(writerfight_t *w)
     }
     w->server.addr.sin_family = AF_INET;
     w->server.addr.sin_port = htons(port);
+    if (ip == NULL) {
+        printf("No valid IP address found\n");
+        exit(1);
+    }
     w->server.addr.sin_addr.s_addr = inet_addr(ip);
     bnd = bind(w->server.fd, (struct sockaddr*) &w->server.addr,
     sizeof(w->server.addr));
