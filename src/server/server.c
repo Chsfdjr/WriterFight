@@ -162,7 +162,6 @@ char *get_ip(void)
 	checkHostEntry(host_entry);
 	IPbuffer = inet_ntoa(*((struct in_addr*)
 						host_entry->h_addr_list[0]));
-
 	return IPbuffer;
 }
 
@@ -170,6 +169,7 @@ char *get_ip(void)
 void init_serv(writerfight_t *w)
 {
     int port = w->server.port;
+    char *ip = get_ip();
     int bnd;
 
     w->server.fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -179,7 +179,7 @@ void init_serv(writerfight_t *w)
     }
     w->server.addr.sin_family = AF_INET;
     w->server.addr.sin_port = htons(port);
-    w->server.addr.sin_addr.s_addr = inet_addr(get_ip());
+    w->server.addr.sin_addr.s_addr = inet_addr(ip);
     bnd = bind(w->server.fd, (struct sockaddr*) &w->server.addr,
     sizeof(w->server.addr));
     if (bnd < 0) {
@@ -196,6 +196,8 @@ void init_serv(writerfight_t *w)
         w->player[i].fd = 0;
         w->player[i].score = 0;
     }
+    system("clear");
+    printf("WriteFight | %s : %d\n\n", ip, port);
     printf("Ready to get people !\n");
     w->game.status = false;
 }
