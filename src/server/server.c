@@ -125,6 +125,47 @@ void loop_serv(writerfight_t *w, int serv_fd)
         handle_client_activity(w, &w->server.readfds);
     }
 }
+void checkHostName(int hostname)
+{
+	if (hostname == -1) {
+		perror("gethostname");
+		exit(84);
+	}
+}
+
+void checkHostEntry(struct hostent * hostentry)
+{
+	if (hostentry == NULL) {
+		perror("gethostbyname");
+		exit(84);
+	}
+}
+
+void checkIPbuffer(char *IPbuffer)
+{
+	if (NULL == IPbuffer) {
+		perror("inet_ntoa");
+		exit(1);
+	}
+}
+
+char *get_ip(void)
+{
+	char hostbuffer[256];
+	char *IPbuffer;
+	struct hostent *host_entry;
+	int hostname;
+
+	hostname = gethostname(hostbuffer, sizeof(hostbuffer));
+	checkHostName(hostname);
+	host_entry = gethostbyname(hostbuffer);
+	checkHostEntry(host_entry);
+	IPbuffer = inet_ntoa(*((struct in_addr*)
+						host_entry->h_addr_list[0]));
+
+	return IPbuffer;
+}
+
 
 void init_serv(writerfight_t *w)
 {
@@ -138,7 +179,7 @@ void init_serv(writerfight_t *w)
     }
     w->server.addr.sin_family = AF_INET;
     w->server.addr.sin_port = htons(port);
-    w->server.addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    w->server.addr.sin_addr.s_addr = inet_addr(get_ip());
     bnd = bind(w->server.fd, (struct sockaddr*) &w->server.addr,
     sizeof(w->server.addr));
     if (bnd < 0) {
